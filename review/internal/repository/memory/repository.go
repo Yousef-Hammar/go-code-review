@@ -1,10 +1,12 @@
 package memory
 
 import (
-	"fmt"
+	"errors"
 
 	"coupon_service/internal/domain"
 )
+
+var ErrNotFound = errors.New("coupon not found")
 
 type Repository struct {
 	entries map[string]domain.Coupon
@@ -19,7 +21,7 @@ func New() *Repository {
 func (r *Repository) FindByCode(code string) (*domain.Coupon, error) {
 	coupon, ok := r.entries[code]
 	if !ok {
-		return nil, fmt.Errorf("Coupon not found")
+		return nil, ErrNotFound
 	}
 	return &coupon, nil
 }
