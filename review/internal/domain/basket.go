@@ -1,8 +1,4 @@
-package entity
-
-import (
-	_ "github.com/gin-gonic/gin"
-)
+package domain
 
 type Basket struct {
 	Value                 int

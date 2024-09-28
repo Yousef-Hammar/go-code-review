@@ -1,8 +1,10 @@
 package entity
 
-import "coupon_service/internal/service/entity"
+import (
+	"coupon_service/internal/domain"
+)
 
 type ApplicationRequest struct {
 	Code   string
-	Basket entity.Basket
+	Basket domain.Basket
 }

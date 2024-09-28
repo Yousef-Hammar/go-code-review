@@ -1,10 +1,11 @@
 package service
 
 import (
-	. "coupon_service/internal/service/entity"
 	"fmt"
 
 	"github.com/google/uuid"
+
+	. "coupon_service/internal/domain"
 )
 
 type Repository interface {

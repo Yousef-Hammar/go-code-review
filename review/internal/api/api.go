@@ -2,19 +2,20 @@ package api
 
 import (
 	"context"
-	"coupon_service/internal/service/entity"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"coupon_service/internal/domain"
 )
 
 type Service interface {
-	ApplyCoupon(entity.Basket, string) (*entity.Basket, error)
+	ApplyCoupon(domain.Basket, string) (*domain.Basket, error)
 	CreateCoupon(int, string, int) any
-	GetCoupons([]string) ([]entity.Coupon, error)
+	GetCoupons([]string) ([]domain.Coupon, error)
 }
 
 type Config struct {

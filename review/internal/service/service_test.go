@@ -1,10 +1,11 @@
 package service
 
 import (
-	"coupon_service/internal/repository/memdb"
-	"coupon_service/internal/service/entity"
 	"reflect"
 	"testing"
+
+	"coupon_service/internal/domain"
+	"coupon_service/internal/repository/memdb"
 )
 
 func TestNew(t *testing.T) {
@@ -32,14 +33,14 @@ func TestService_ApplyCoupon(t *testing.T) {
 		repo Repository
 	}
 	type args struct {
-		basket entity.Basket
+		basket domain.Basket
 		code   string
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantB   *entity.Basket
+		wantB   *domain.Basket
 		wantErr bool
 	}{}
 	for _, tt := range tests {
