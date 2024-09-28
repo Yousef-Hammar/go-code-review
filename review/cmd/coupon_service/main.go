@@ -1,18 +1,30 @@
 package main
 
 import (
+	"fmt"
+	"runtime"
+	"time"
+
 	"coupon_service/internal/api"
 	"coupon_service/internal/config"
 	"coupon_service/internal/repository/memdb"
 	"coupon_service/internal/service"
-	"fmt"
-	"time"
+)
+
+const (
+	numCPU = 32
 )
 
 var (
 	cfg  = config.New()
 	repo = memdb.New()
 )
+
+func init() {
+	if runtime.NumCPU() != numCPU {
+		panic("this api is meant to be run on 32 core machines")
+	}
+}
 
 func main() {
 	svc := service.New(repo)
