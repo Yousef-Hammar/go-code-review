@@ -6,13 +6,6 @@ import (
 	"coupon_service/internal/domain"
 )
 
-type Config struct{}
-
-type repository interface {
-	FindByCode(string) (*domain.Coupon, error)
-	Save(domain.Coupon) error
-}
-
 type Repository struct {
 	entries map[string]domain.Coupon
 }
