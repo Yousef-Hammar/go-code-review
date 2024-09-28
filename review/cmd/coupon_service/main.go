@@ -9,7 +9,7 @@ import (
 
 	"coupon_service/internal/api"
 	"coupon_service/internal/config"
-	"coupon_service/internal/repository/memdb"
+	"coupon_service/internal/repository/memory"
 	"coupon_service/internal/service"
 )
 
@@ -20,7 +20,7 @@ const (
 
 var (
 	cfg  = config.New()
-	repo = memdb.New()
+	repo = memory.New()
 )
 
 func init() {

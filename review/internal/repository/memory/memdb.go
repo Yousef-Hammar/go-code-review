@@ -1,4 +1,4 @@
-package memdb
+package memory
 
 import (
 	"fmt"
