@@ -11,7 +11,9 @@ type Repository struct {
 }
 
 func New() *Repository {
-	return &Repository{}
+	return &Repository{
+		entries: make(map[string]domain.Coupon),
+	}
 }
 
 func (r *Repository) FindByCode(code string) (*domain.Coupon, error) {
