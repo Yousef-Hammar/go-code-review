@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"time"
@@ -24,7 +25,8 @@ var (
 
 func init() {
 	if os.Getenv("env") != localEnv && runtime.NumCPU() != numCPU {
-		panic("this api is meant to be run on 32 core machines")
+		log.Print("this api is meant to be run on 32 core machines")
+		os.Exit(1)
 	}
 }
 
