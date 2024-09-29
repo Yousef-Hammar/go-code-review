@@ -184,7 +184,18 @@ func TestGet(t *testing.T) {
 			codes:          []string{},
 			setupMock:      func(srv *mocks.Service, codes []string) {},
 			wantStatusCode: http.StatusBadRequest,
-			want:           []coupon{},
+			want:           nil,
+		},
+		{
+			name:  "Unknown error",
+			codes: []string{"test", "test2"},
+			setupMock: func(srv *mocks.Service, codes []string) {
+				srv.On("GetCoupons", mock.MatchedBy(func(_ context.Context) bool { return true }), codes).
+					Return(nil, errors.New("error test")).
+					Once()
+			},
+			wantStatusCode: http.StatusInternalServerError,
+			want:           nil,
 		},
 	}
 
@@ -248,6 +259,39 @@ func TestApply(t *testing.T) {
 				ApplicationSuccessful: true,
 			},
 		},
+		{
+			name: "Invalid body",
+			body: api.ApplyReq{
+				Basket: api.Basket{Value: 100},
+			},
+			setupMock:      func(srv *mocks.Service, value int, code string) {},
+			wantStatusCode: http.StatusBadRequest,
+			want:           api.Basket{},
+		},
+		{
+			name: "Negative basket value",
+			body: api.ApplyReq{Basket: api.Basket{Value: -100}, Code: "test"},
+			setupMock: func(srv *mocks.Service, value int, code string) {
+				srv.On("ApplyCoupon", mock.MatchedBy(func(_ context.Context) bool { return true }),
+					domain.Basket{Value: value}, code).
+					Return(nil, service.ErrInvalidBasketValue).
+					Once()
+			},
+			wantStatusCode: http.StatusBadRequest,
+			want:           api.Basket{},
+		},
+		{
+			name: "Undefined error",
+			body: api.ApplyReq{Basket: api.Basket{Value: 5}, Code: "test"},
+			setupMock: func(srv *mocks.Service, value int, code string) {
+				srv.On("ApplyCoupon", mock.MatchedBy(func(_ context.Context) bool { return true }),
+					domain.Basket{Value: value}, code).
+					Return(nil, errors.New("test error")).
+					Once()
+			},
+			wantStatusCode: http.StatusInternalServerError,
+			want:           api.Basket{},
+		},
 	}
 
 	for _, tc := range tests {
@@ -271,14 +315,13 @@ func TestApply(t *testing.T) {
 
 			router.ServeHTTP(w, req)
 
-			if tc.wantStatusCode != http.StatusOK {
-				// TODO: handle error
+			assert.Equal(t, tc.wantStatusCode, w.Code, "expected status code %d, got: %d", tc.wantStatusCode, w.Code)
+
+			if tc.wantStatusCode == http.StatusOK {
+				var resp api.Basket
+				require.NoError(t, json.NewDecoder(w.Body).Decode(&resp), "error decoding response body")
+				assert.Equal(t, tc.want, resp, "expected %+v, got: %+v", tc.want, resp)
 			}
-
-			var resp api.Basket
-			require.NoError(t, json.NewDecoder(w.Body).Decode(&resp), "error decoding response body")
-			assert.Equal(t, tc.want, resp, "expected %+v, got: %+v", tc.want, resp)
-
 		})
 	}
 }

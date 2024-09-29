@@ -80,14 +80,14 @@ func (app *Application) Get(c *gin.Context) {
 }
 
 type Basket struct {
-	Value                 int  `json:"value"`
+	Value                 int  `json:"value" binding:"required"`
 	AppliedDiscount       int  `json:"appliedDiscount"`
 	ApplicationSuccessful bool `json:"applicationSuccessful"`
 }
 
 type ApplyReq struct {
-	Basket Basket `json:"basket"`
-	Code   string `json:"code"`
+	Basket Basket `json:"basket" binding:"required"`
+	Code   string `json:"code" binding:"required"`
 }
 
 func (app *Application) Apply(c *gin.Context) {
@@ -104,8 +104,14 @@ func (app *Application) Apply(c *gin.Context) {
 
 	basket, err := app.service.ApplyCoupon(c.Request.Context(), *basket, body.Code)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		switch err {
+		case service.ErrInvalidCode, service.ErrInvalidBasketValue, service.ErrMinBasketValue, service.ErrNotFound:
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, Basket{
