@@ -2,11 +2,10 @@ package service
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 
-	. "github.com/Yousef-Hammar/go-code-review/coupon_service/internal/domain"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/domain"
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/repository/memory"
 )
 
@@ -14,11 +13,13 @@ var (
 	ErrInvalidCode           = errors.New("invalid code")
 	ErrInvalidDiscount       = errors.New("invalid discount")
 	ErrInvalidMinBasketValue = errors.New("invalid min basket")
+	ErrInvalidBasketValue    = errors.New("invalid basket value")
+	ErrMinBasketValue        = errors.New("not sufficient basket value")
 )
 
 type Repository interface {
-	FindByCode(string) (*Coupon, error)
-	Save(Coupon) error
+	FindByCode(string) (*domain.Coupon, error)
+	Save(domain.Coupon) error
 }
 
 type Service struct {
@@ -48,7 +49,7 @@ func (s Service) CreateCoupon(discount int, code string, minBasketValue int) err
 		return ErrInvalidCode
 	}
 
-	coupon := Coupon{
+	coupon := domain.Coupon{
 		ID:             uuid.NewString(),
 		Code:           code,
 		Discount:       discount,
@@ -61,8 +62,8 @@ func (s Service) CreateCoupon(discount int, code string, minBasketValue int) err
 	return nil
 }
 
-func (s Service) GetCoupons(codes []string) ([]Coupon, error) {
-	coupons := make([]Coupon, 0, len(codes))
+func (s Service) GetCoupons(codes []string) ([]domain.Coupon, error) {
+	coupons := make([]domain.Coupon, 0, len(codes))
 
 	for _, code := range codes {
 		coupon, err := s.repo.FindByCode(code)
@@ -78,20 +79,29 @@ func (s Service) GetCoupons(codes []string) ([]Coupon, error) {
 	return coupons, nil
 }
 
-func (s Service) ApplyCoupon(basket Basket, code string) (b *Basket, e error) {
-	b = &basket
+func (s Service) ApplyCoupon(basket domain.Basket, code string) (*domain.Basket, error) {
+	var (
+		err error
+	)
+
+	if basket.Value <= 0 {
+		return nil, ErrInvalidBasketValue
+	}
+
 	coupon, err := s.repo.FindByCode(code)
 	if err != nil {
 		return nil, err
 	}
 
-	if b.Value > 0 {
-		b.AppliedDiscount = coupon.Discount
-		b.ApplicationSuccessful = true
-	}
-	if b.Value == 0 {
-		return
+	if basket.Value < coupon.MinBasketValue {
+		return nil, ErrMinBasketValue
 	}
 
-	return nil, fmt.Errorf("Tried to apply discount to negative value")
+	discountAmount := (basket.Value * coupon.Discount) / 100
+
+	return &domain.Basket{
+		Value:                 basket.Value - discountAmount,
+		AppliedDiscount:       coupon.Discount,
+		ApplicationSuccessful: true,
+	}, nil
 }

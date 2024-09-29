@@ -2,7 +2,6 @@ package service_test
 
 import (
 	"errors"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -173,32 +172,96 @@ func TestGetCoupon(t *testing.T) {
 	}
 }
 
-func TestService_ApplyCoupon(t *testing.T) {
-	type fields struct {
-		repo service.Repository
-	}
+func TestApplyCoupon(t *testing.T) {
 	type args struct {
-		basket domain.Basket
 		code   string
+		basket domain.Basket
 	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantB   *domain.Basket
-		wantErr bool
-	}{}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := service.New(tt.fields.repo)
-			gotB, err := s.ApplyCoupon(tt.args.basket, tt.args.code)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ApplyCoupon() error = %v, wantErr %v", err, tt.wantErr)
+	type testCase struct {
+		name        string
+		args        args
+		setupMocks  func(*mocks.Repository, string)
+		want        *domain.Basket
+		expectedErr error
+	}
+
+	testCases := []testCase{
+		{
+			name: "Successful coupon application",
+			args: args{
+				code:   "test1",
+				basket: domain.Basket{Value: 50},
+			},
+			setupMocks: func(repo *mocks.Repository, code string) {
+				repo.On("FindByCode", code).Return(&domain.Coupon{
+					ID:             "id1",
+					Code:           code,
+					Discount:       10,
+					MinBasketValue: 20,
+				}, nil).Once()
+			},
+			want: &domain.Basket{
+				Value:                 45,
+				AppliedDiscount:       10,
+				ApplicationSuccessful: true,
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "Basket with negative value",
+			args: args{
+				code:   "test1",
+				basket: domain.Basket{Value: -50},
+			},
+			setupMocks:  func(repo *mocks.Repository, code string) {},
+			want:        nil,
+			expectedErr: service.ErrInvalidBasketValue,
+		},
+		{
+			name: "Basket with value less than minimum required",
+			args: args{
+				code:   "test1",
+				basket: domain.Basket{Value: 10},
+			},
+			setupMocks: func(repo *mocks.Repository, code string) {
+				repo.On("FindByCode", code).Return(&domain.Coupon{
+					ID:             "id1",
+					Code:           code,
+					Discount:       10,
+					MinBasketValue: 20,
+				}, nil).Once()
+			},
+			want:        nil,
+			expectedErr: service.ErrMinBasketValue,
+		},
+		{
+			name: "Invalid coupon code",
+			args: args{
+				code:   "test1",
+				basket: domain.Basket{Value: 10},
+			},
+			setupMocks: func(repo *mocks.Repository, code string) {
+				repo.On("FindByCode", code).Return(nil, service.ErrInvalidCode).Once()
+			},
+			want:        nil,
+			expectedErr: service.ErrInvalidCode,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			repo := mocks.NewRepository(t)
+			tc.setupMocks(repo, tc.args.code)
+			defer repo.AssertExpectations(t)
+
+			srv := service.New(repo)
+			got, err := srv.ApplyCoupon(tc.args.basket, tc.args.code)
+			if tc.expectedErr != nil {
+				assert.Error(t, err, "expected error to be %v, got: %v", tc.expectedErr, err)
+				assert.IsType(t, tc.expectedErr, err, "expected error %v, got: %v", tc.expectedErr, err)
 				return
 			}
-			if !reflect.DeepEqual(gotB, tt.wantB) {
-				t.Errorf("ApplyCoupon() gotB = %v, want %v", gotB, tt.wantB)
-			}
+			assert.EqualValues(t, tc.want, got, "expected basket to be %+v, got: %+v", tc.want, got)
 		})
 	}
 }
