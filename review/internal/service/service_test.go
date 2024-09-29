@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 
@@ -94,6 +95,81 @@ func TestCreateCoupon(t *testing.T) {
 			assert.NoError(t, err, "expected error nil, got: %v", err)
 		})
 
+	}
+}
+
+func TestGetCoupon(t *testing.T) {
+	type testCase struct {
+		name        string
+		codes       []string
+		setupMocks  func(*mocks.Repository)
+		want        []domain.Coupon
+		expectedErr error
+	}
+
+	testCases := []testCase{
+		{
+			name:  "Successful coupons retrieval",
+			codes: []string{"test1", "test2"},
+			setupMocks: func(repo *mocks.Repository) {
+				repo.On("FindByCode", "test1").
+					Return(&domain.Coupon{ID: "id1", Code: "test1", Discount: 10, MinBasketValue: 0}, nil).
+					Once()
+				repo.On("FindByCode", "test2").
+					Return(&domain.Coupon{ID: "id2", Code: "test2", Discount: 10, MinBasketValue: 0}, nil).
+					Once()
+			},
+			want: []domain.Coupon{
+				{ID: "id1", Code: "test1", Discount: 10, MinBasketValue: 0},
+				{ID: "id2", Code: "test2", Discount: 10, MinBasketValue: 0},
+			},
+			expectedErr: nil,
+		},
+		{
+			name:  "Successful coupons retrieval with no existing coupon",
+			codes: []string{"test1", "test2"},
+			setupMocks: func(repo *mocks.Repository) {
+				repo.On("FindByCode", "test1").
+					Return(&domain.Coupon{ID: "id1", Code: "test1", Discount: 10, MinBasketValue: 0}, nil).
+					Once()
+				repo.On("FindByCode", "test2").
+					Return(nil, memory.ErrNotFound).Once().
+					Once()
+			},
+			want: []domain.Coupon{
+				{ID: "id1", Code: "test1", Discount: 10, MinBasketValue: 0},
+			},
+			expectedErr: nil,
+		},
+		{
+			name:  "Error during coupon retrieval",
+			codes: []string{"test1", "test2"},
+			setupMocks: func(repo *mocks.Repository) {
+				repo.On("FindByCode", "test1").
+					Return(nil, errors.New("fatal error")).
+					Once()
+			},
+			want:        nil,
+			expectedErr: errors.New("fatal error"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			repo := mocks.NewRepository(t)
+			tc.setupMocks(repo)
+			defer repo.AssertExpectations(t)
+
+			srv := service.New(repo)
+			got, err := srv.GetCoupons(tc.codes)
+			if tc.expectedErr != nil {
+				assert.Error(t, err, "expected error to be %v, got: %v", tc.expectedErr, err)
+				assert.IsType(t, tc.expectedErr, err, "expected error %v, got: %v", tc.expectedErr, err)
+				return
+			}
+			assert.EqualValues(t, tc.want, got, "expected coupons slice to be of length %d, "+
+				"got slice of length %d", len(tc.want), len(got))
+		})
 	}
 }
 

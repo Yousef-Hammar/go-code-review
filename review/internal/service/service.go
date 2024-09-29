@@ -63,21 +63,19 @@ func (s Service) CreateCoupon(discount int, code string, minBasketValue int) err
 
 func (s Service) GetCoupons(codes []string) ([]Coupon, error) {
 	coupons := make([]Coupon, 0, len(codes))
-	var e error = nil
 
-	for idx, code := range codes {
+	for _, code := range codes {
 		coupon, err := s.repo.FindByCode(code)
 		if err != nil {
-			if e == nil {
-				e = fmt.Errorf("code: %s, index: %d", code, idx)
-			} else {
-				e = fmt.Errorf("%w; code: %s, index: %d", e, code, idx)
+			if errors.Is(err, memory.ErrNotFound) {
+				continue
 			}
+			return nil, err
 		}
 		coupons = append(coupons, *coupon)
 	}
 
-	return coupons, e
+	return coupons, nil
 }
 
 func (s Service) ApplyCoupon(basket Basket, code string) (b *Basket, e error) {
