@@ -1,0 +1,9 @@
+with-expecter: True
+packages:
+  github.com/Yousef-Hammar/go-code-review/coupon_service/internal/service:
+    config:
+      all: True
+      recursive: True
+      filename: "{{.InterfaceName | lower }}_mock.go"
+      dir: "internal/service/mocks"
+      outpkg: "mocks"
