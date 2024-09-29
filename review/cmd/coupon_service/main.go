@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"runtime"
-	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/api"
-	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/config"
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/repository/memory"
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/service"
 )
@@ -16,11 +15,6 @@ import (
 const (
 	localEnv = "local"
 	numCPU   = 32
-)
-
-var (
-	cfg  = config.New()
-	repo = memory.New()
 )
 
 func init() {
@@ -31,11 +25,18 @@ func init() {
 }
 
 func main() {
+	config := api.New()
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
+	repo := memory.New()
 	svc := service.New(repo)
-	本 := api.New(cfg.API, svc)
-	本.Start()
-	fmt.Println("Starting Coupon service server")
-	<-time.After(1 * time.Hour * 24 * 365)
-	fmt.Println("Coupon service server alive for a year, closing")
-	本.Close()
+
+	app := api.NewApplication(*config, logger, svc)
+
+	router := app.Mount()
+
+	if err := app.Run(router); err != nil {
+		log.Fatal(err)
+	}
 }

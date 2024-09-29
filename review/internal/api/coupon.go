@@ -1,47 +1,41 @@
 package api
 
 import (
-	"context"
 	"net/http"
 
-	. "github.com/Yousef-Hammar/go-code-review/coupon_service/internal/api/entity"
-
 	"github.com/gin-gonic/gin"
+
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/service"
 )
 
-func (a *API) Apply(c *gin.Context) {
-	apiReq := ApplicationRequest{}
-	if err := c.ShouldBindJSON(&apiReq); err != nil {
-		return
-	}
-	basket, err := a.svc.ApplyCoupon(context.Background(), apiReq.Basket, apiReq.Code)
-	if err != nil {
-		return
-	}
-
-	c.JSON(http.StatusOK, basket)
+type CreateCouponReq struct {
+	Code           string `json:"code" binding:"required"`
+	Discount       int    `json:"discount" binding:"required"`
+	MinBasketValue int    `json:"minBasketValue" binding:"required"`
 }
 
-func (a *API) Create(c *gin.Context) {
-	apiReq := Coupon{}
-	if err := c.ShouldBindJSON(&apiReq); err != nil {
-		return
-	}
-	err := a.svc.CreateCoupon(context.Background(), apiReq.Discount, apiReq.Code, apiReq.MinBasketValue)
-	if err != nil {
-		return
-	}
-	c.Status(http.StatusOK)
-}
+func (app *Application) CreateCoupon(c *gin.Context) {
+	var (
+		body CreateCouponReq
+	)
 
-func (a *API) Get(c *gin.Context) {
-	apiReq := CouponRequest{}
-	if err := c.ShouldBindJSON(&apiReq); err != nil {
+	if err := c.ShouldBindBodyWithJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	coupons, err := a.svc.GetCoupons(context.Background(), apiReq.Codes)
+
+	err := app.service.CreateCoupon(c.Request.Context(), body.Discount, body.Code, body.MinBasketValue)
 	if err != nil {
-		return
+		switch err {
+		case service.ErrInvalidCode, service.ErrInvalidDiscount, service.ErrInvalidMinBasketValue:
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+
+		}
 	}
-	c.JSON(http.StatusOK, coupons)
+
+	c.Status(http.StatusCreated)
 }
