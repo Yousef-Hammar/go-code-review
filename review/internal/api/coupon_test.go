@@ -28,7 +28,7 @@ func newTestApplication(t *testing.T, srv *mocks.Service) *api.Application {
 	t.Helper()
 
 	logger := zap.NewNop().Sugar()
-	return api.NewApplication(config.Config{}, logger, srv)
+	return api.New(config.Config{}, logger, srv)
 }
 
 func TestCreate(t *testing.T) {

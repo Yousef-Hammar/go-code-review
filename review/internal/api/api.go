@@ -15,13 +15,23 @@ import (
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/config"
 )
 
+type responseWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+func (rw *responseWriter) Write(data []byte) (int, error) {
+	rw.body.Write(data)
+	return rw.ResponseWriter.Write(data)
+}
+
 type Application struct {
 	config  config.Config
 	logger  *zap.SugaredLogger
 	service Service
 }
 
-func NewApplication(config config.Config, logger *zap.SugaredLogger, service Service) *Application {
+func New(config config.Config, logger *zap.SugaredLogger, service Service) *Application {
 	return &Application{
 		config:  config,
 		logger:  logger,
@@ -31,6 +41,7 @@ func NewApplication(config config.Config, logger *zap.SugaredLogger, service Ser
 
 func (app *Application) requestLoggerMiddleware(c *gin.Context) {
 	var requestBody []byte
+	var responseBody bytes.Buffer
 	now := time.Now().UTC()
 
 	if c.Request.Body != nil {
@@ -44,6 +55,11 @@ func (app *Application) requestLoggerMiddleware(c *gin.Context) {
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 	}
 
+	c.Writer = &responseWriter{
+		ResponseWriter: c.Writer,
+		body:           &responseBody,
+	}
+
 	c.Next()
 
 	latency := time.Since(now)
@@ -55,6 +71,7 @@ func (app *Application) requestLoggerMiddleware(c *gin.Context) {
 		zap.String("body", string(requestBody)),
 		zap.String("clientIP", c.ClientIP()),
 		zap.Int("status", c.Writer.Status()),
+		zap.String("response", responseBody.String()),
 		zap.Duration("latency", latency),
 	)
 

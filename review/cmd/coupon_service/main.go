@@ -19,7 +19,7 @@ func main() {
 	repo := memory.New()
 	svc := service.New(repo)
 
-	app := api.NewApplication(cfg, logger, svc)
+	app := api.New(cfg, logger, svc)
 
 	router := app.Mount()
 
