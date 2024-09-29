@@ -1,14 +1,23 @@
-# build stage
-FROM golang:latest AS builder
+FROM golang:alpine AS builder
 
-RUN apk add git gcc libc-dev
+RUN apk add --no-cache git gcc musl-dev
 
-WORKDIR /go/src/coupon-service
+WORKDIR /app
 
-COPY review .
+COPY go.mod ./
+RUN go mod download
 
-WORKDIR /go/src/coupon-service/cmd/export
-RUN go build -o main .
+COPY . .
 
-ENTRYPOINT ./main
+WORKDIR /app/cmd/coupon_service
+RUN go build -o /app/bin/main .
+
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /app/bin/main .
+
+ENTRYPOINT ["./main"]
+
 EXPOSE 8080
