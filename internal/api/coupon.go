@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -22,7 +23,7 @@ func (app *Application) Create(c *gin.Context) {
 	)
 
 	if err := c.ShouldBindBodyWithJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		app.writeJSONError(c, http.StatusBadRequest, err)
 		return
 	}
 
@@ -30,10 +31,10 @@ func (app *Application) Create(c *gin.Context) {
 	if err != nil {
 		switch err {
 		case service.ErrInvalidCode, service.ErrInvalidDiscount, service.ErrInvalidMinBasketValue:
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			app.writeJSONError(c, http.StatusBadRequest, err)
 			return
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			app.writeJSONError(c, http.StatusInternalServerError, err)
 			return
 		}
 	}
@@ -55,7 +56,7 @@ func (app *Application) Get(c *gin.Context) {
 	rawCodes := c.Query("codes")
 
 	if rawCodes == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "no code specified"})
+		app.writeJSONError(c, http.StatusBadRequest, errors.New("no code specified"))
 		return
 	}
 
@@ -63,7 +64,7 @@ func (app *Application) Get(c *gin.Context) {
 
 	coupons, err := app.service.GetCoupons(c.Request.Context(), codes)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		app.writeJSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -94,7 +95,7 @@ func (app *Application) Apply(c *gin.Context) {
 	var body ApplyReq
 
 	if err := c.ShouldBindBodyWithJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		app.writeJSONError(c, http.StatusBadRequest, err)
 		return
 	}
 
@@ -106,10 +107,10 @@ func (app *Application) Apply(c *gin.Context) {
 	if err != nil {
 		switch err {
 		case service.ErrInvalidCode, service.ErrInvalidBasketValue, service.ErrMinBasketValue, service.ErrNotFound:
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			app.writeJSONError(c, http.StatusBadRequest, err)
 			return
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			app.writeJSONError(c, http.StatusInternalServerError, err)
 			return
 		}
 	}

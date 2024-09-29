@@ -119,3 +119,7 @@ func (app *Application) Run(mux http.Handler) error {
 func (app *Application) writeJSONResponse(c *gin.Context, status int, data any) {
 	c.JSON(status, gin.H{"data": data})
 }
+
+func (app *Application) writeJSONError(c *gin.Context, status int, err error) {
+	c.JSON(status, gin.H{"error": err.Error()})
+}
