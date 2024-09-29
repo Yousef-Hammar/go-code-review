@@ -5,7 +5,7 @@ RUN apk add git gcc libc-dev
 
 WORKDIR /go/src/coupon-service
 
-COPY . .
+COPY review .
 
 WORKDIR /go/src/coupon-service/cmd/export
 RUN go build -o main .
