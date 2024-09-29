@@ -33,7 +33,7 @@ func (app *Application) Mount() http.Handler {
 
 	v1 := router.Group("/v1")
 
-	v1.POST("/coupons", app.CreateCoupon)
+	v1.POST("/coupons", app.Create)
 	v1.GET("/coupons", app.Get)
 	v1.POST("/coupons/basket", app.Apply)
 

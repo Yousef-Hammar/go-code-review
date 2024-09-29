@@ -118,7 +118,7 @@ func TestCreate(t *testing.T) {
 			app := newTestApplication(t, srv)
 			gin.SetMode(gin.TestMode)
 			router := gin.New()
-			router.POST("/v1/coupons", app.CreateCoupon)
+			router.POST("/v1/coupons", app.Create)
 			httptest.NewServer(router)
 
 			var buff bytes.Buffer

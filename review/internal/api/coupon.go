@@ -16,7 +16,7 @@ type CreateCouponReq struct {
 	MinBasketValue int    `json:"minBasketValue" binding:"required"`
 }
 
-func (app *Application) CreateCoupon(c *gin.Context) {
+func (app *Application) Create(c *gin.Context) {
 	var (
 		body CreateCouponReq
 	)
