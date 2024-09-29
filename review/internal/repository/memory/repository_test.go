@@ -66,3 +66,35 @@ func TestFindByCode(t *testing.T) {
 		})
 	}
 }
+
+func TestSave(t *testing.T) {
+	type testCase struct {
+		name        string
+		coupon      domain.Coupon
+		expectedErr error
+	}
+
+	testCases := []testCase{
+		{
+			name: "Successful save",
+			coupon: domain.Coupon{
+				ID:             "test",
+				Code:           "test",
+				Discount:       0,
+				MinBasketValue: 0,
+			},
+			expectedErr: nil,
+		},
+	}
+
+	repo := memory.New()
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := repo.Save(tc.coupon)
+			if !errors.Is(err, tc.expectedErr) {
+				t.Errorf("expected err to be %v, got %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
