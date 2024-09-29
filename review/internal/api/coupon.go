@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/domain"
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/service"
 )
 
@@ -76,4 +77,40 @@ func (app *Application) Get(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+type Basket struct {
+	Value                 int  `json:"value"`
+	AppliedDiscount       int  `json:"appliedDiscount"`
+	ApplicationSuccessful bool `json:"applicationSuccessful"`
+}
+
+type ApplyReq struct {
+	Basket Basket `json:"basket"`
+	Code   string `json:"code"`
+}
+
+func (app *Application) Apply(c *gin.Context) {
+	var body ApplyReq
+
+	if err := c.ShouldBindBodyWithJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	basket := &domain.Basket{
+		Value: body.Basket.Value,
+	}
+
+	basket, err := app.service.ApplyCoupon(c.Request.Context(), *basket, body.Code)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, Basket{
+		Value:                 basket.Value,
+		AppliedDiscount:       basket.AppliedDiscount,
+		ApplicationSuccessful: basket.ApplicationSuccessful,
+	})
 }

@@ -213,5 +213,72 @@ func TestGet(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestApply(t *testing.T) {
+	type testCase struct {
+		name           string
+		body           api.ApplyReq
+		setupMock      func(*mocks.Service, int, string)
+		wantStatusCode int
+		want           api.Basket
+	}
+
+	tests := []testCase{
+		{
+			name: "Successful coupon application",
+			body: api.ApplyReq{
+				Basket: api.Basket{Value: 100},
+				Code:   "test",
+			},
+			setupMock: func(srv *mocks.Service, value int, code string) {
+				srv.On("ApplyCoupon", mock.MatchedBy(func(_ context.Context) bool { return true }),
+					domain.Basket{Value: value}, code).
+					Return(&domain.Basket{
+						Value:                 90,
+						AppliedDiscount:       10,
+						ApplicationSuccessful: true,
+					}, nil).
+					Once()
+			},
+			wantStatusCode: http.StatusOK,
+			want: api.Basket{
+				Value:                 90,
+				AppliedDiscount:       10,
+				ApplicationSuccessful: true,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			srv := mocks.NewService(t)
+			tc.setupMock(srv, tc.body.Basket.Value, tc.body.Code)
+			defer srv.AssertExpectations(t)
+
+			app := newTestApplication(t, srv)
+			gin.SetMode(gin.TestMode)
+			router := gin.New()
+			router.POST("/v1/coupons/basket", app.Apply)
+
+			var buff bytes.Buffer
+			err := json.NewEncoder(&buff).Encode(tc.body)
+			require.NoErrorf(t, err, "error encoding request %v", err)
+
+			req := httptest.NewRequest(http.MethodPost, "/v1/coupons/basket", strings.NewReader(buff.String()))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+
+			router.ServeHTTP(w, req)
+
+			if tc.wantStatusCode != http.StatusOK {
+				// TODO: handle error
+			}
+
+			var resp api.Basket
+			require.NoError(t, json.NewDecoder(w.Body).Decode(&resp), "error decoding response body")
+			assert.Equal(t, tc.want, resp, "expected %+v, got: %+v", tc.want, resp)
+
+		})
+	}
 }
