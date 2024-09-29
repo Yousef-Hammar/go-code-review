@@ -33,9 +33,12 @@ func (app *Application) Mount() http.Handler {
 
 	v1 := router.Group("/v1")
 
-	v1.POST("/coupons", app.Create)
-	v1.GET("/coupons", app.Get)
-	v1.POST("/coupons/basket", app.Apply)
+	coupons := v1.Group("/coupons")
+	{
+		coupons.POST("/", app.Create)
+		coupons.GET("/", app.Get)
+		coupons.POST("/basket", app.Apply)
+	}
 
 	return router
 }
@@ -52,7 +55,7 @@ func (app *Application) Run(mux http.Handler) error {
 	app.logger.Info("start http server on", "addr", srv.Addr)
 
 	if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-		app.logger.Fatalw("start http server failed", "error", err)
+		app.logger.Errorw("start http server failed", "error", err)
 		return err
 	}
 
