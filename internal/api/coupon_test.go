@@ -218,10 +218,9 @@ func TestGet(t *testing.T) {
 
 			assert.Equal(t, tc.wantStatusCode, w.Code, "expected status code %d, got: %d", tc.wantStatusCode, w.Code)
 			if tc.wantStatusCode == http.StatusOK {
-				var resp []coupon
+				var resp map[string][]coupon
 				require.NoError(t, json.NewDecoder(w.Body).Decode(&resp), "error decoding response body")
-
-				assert.Equal(t, tc.want, resp, "expected %+v, got: %+v", tc.want, resp)
+				assert.Equal(t, tc.want, resp["data"], "expected %+v, got: %+v", tc.want, resp)
 			}
 		})
 	}
@@ -319,9 +318,9 @@ func TestApply(t *testing.T) {
 			assert.Equal(t, tc.wantStatusCode, w.Code, "expected status code %d, got: %d", tc.wantStatusCode, w.Code)
 
 			if tc.wantStatusCode == http.StatusOK {
-				var resp api.Basket
+				var resp map[string]api.Basket
 				require.NoError(t, json.NewDecoder(w.Body).Decode(&resp), "error decoding response body")
-				assert.Equal(t, tc.want, resp, "expected %+v, got: %+v", tc.want, resp)
+				assert.Equal(t, tc.want, resp["data"], "expected %+v, got: %+v", tc.want, resp)
 			}
 		})
 	}

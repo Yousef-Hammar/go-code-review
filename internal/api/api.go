@@ -115,3 +115,7 @@ func (app *Application) Run(mux http.Handler) error {
 
 	return nil
 }
+
+func (app *Application) writeJSONResponse(c *gin.Context, status int, data any) {
+	c.JSON(status, gin.H{"data": data})
+}

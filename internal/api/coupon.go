@@ -76,7 +76,7 @@ func (app *Application) Get(c *gin.Context) {
 		})
 	}
 
-	c.JSON(http.StatusOK, resp)
+	app.writeJSONResponse(c, http.StatusOK, resp)
 }
 
 type Basket struct {
@@ -114,7 +114,7 @@ func (app *Application) Apply(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, Basket{
+	app.writeJSONResponse(c, http.StatusOK, Basket{
 		Value:                 basket.Value,
 		AppliedDiscount:       basket.AppliedDiscount,
 		ApplicationSuccessful: basket.ApplicationSuccessful,
