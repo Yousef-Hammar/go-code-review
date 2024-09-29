@@ -10,6 +10,10 @@ import (
 	"go.uber.org/zap"
 )
 
+type config struct {
+	Addr string
+}
+
 type Application struct {
 	config  Config
 	logger  *zap.SugaredLogger
@@ -29,29 +33,23 @@ func (app *Application) Mount() http.Handler {
 
 	v1 := router.Group("/v1")
 
-	v1.POST("/coupons", func(context *gin.Context) {
-		app.logger.Infof("hello world from CreateCoupon")
-	})
-	v1.GET("/coupons", func(context *gin.Context) {
-		app.logger.Infof("hello world from GetCoupons")
-	})
-	v1.POST("/coupons/basket", func(context *gin.Context) {
-		app.logger.Infof("hello world from ApplyCoupon")
-	})
+	v1.POST("/coupons", app.CreateCoupon)
+	v1.GET("/coupons", app.Get)
+	v1.POST("/coupons/basket", app.Apply)
 
 	return router
 }
 
 func (app *Application) Run(mux http.Handler) error {
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", app.config.Port),
+		Addr:         fmt.Sprintf("%s", app.config.Addr),
 		Handler:      mux,
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  15 * time.Second,
 		IdleTimeout:  time.Minute,
 	}
 
-	app.logger.Infow("start http server on", "addr", srv.Addr)
+	app.logger.Info("start http server on", "addr", srv.Addr)
 
 	if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		app.logger.Fatalw("start http server failed", "error", err)

@@ -9,9 +9,9 @@ type Config struct {
 	Port int
 }
 
-func New() *Config {
-	return &Config{
-		Addr: getString("addr", ":8080"),
+func New() Config {
+	return Config{
+		Addr: getString("ADDR", ":8080"),
 	}
 }
 

@@ -32,7 +32,7 @@ func main() {
 	repo := memory.New()
 	svc := service.New(repo)
 
-	app := api.NewApplication(*config, logger, svc)
+	app := api.NewApplication(config, logger, svc)
 
 	router := app.Mount()
 
