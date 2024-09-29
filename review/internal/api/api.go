@@ -10,10 +10,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type config struct {
-	Addr string
-}
-
 type Application struct {
 	config  Config
 	logger  *zap.SugaredLogger
