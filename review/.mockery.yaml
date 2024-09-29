@@ -8,3 +8,11 @@ packages:
       filename: "{{.InterfaceName | lower }}_mock.go"
       dir: "internal/service/internal/mocks"
       outpkg: "mocks"
+  github.com/Yousef-Hammar/go-code-review/coupon_service/internal/api:
+    config:
+      all: True
+      recursive: True
+      mockname: "{{.InterfaceName}}"
+      filename: "{{.InterfaceName | lower }}_mock.go"
+      dir: "internal/api/internal/mocks"
+      outpkg: "mocks"
