@@ -12,6 +12,7 @@ import (
 
 var (
 	ErrInvalidCode           = errors.New("invalid code")
+	ErrNotFound              = errors.New("coupon not found")
 	ErrInvalidDiscount       = errors.New("invalid discount")
 	ErrInvalidMinBasketValue = errors.New("invalid min basket")
 	ErrInvalidBasketValue    = errors.New("invalid basket value")
@@ -80,13 +81,22 @@ func (s Service) ApplyCoupon(ctx context.Context, basket domain.Basket, code str
 		err error
 	)
 
+	if code == "" {
+		return nil, ErrInvalidCode
+	}
+
 	if basket.Value <= 0 {
 		return nil, ErrInvalidBasketValue
 	}
 
 	coupon, err := s.repo.FindByCode(ctx, code)
 	if err != nil {
-		return nil, err
+		switch err {
+		case memory.ErrNotFound:
+			return nil, ErrNotFound
+		default:
+			return nil, err
+		}
 	}
 
 	if basket.Value < coupon.MinBasketValue {

@@ -263,18 +263,42 @@ func TestApplyCoupon(t *testing.T) {
 			expectedErr: service.ErrMinBasketValue,
 		},
 		{
-			name: "Invalid coupon code",
+			name: "Empty coupon code",
 			args: args{
-				code:   "test1",
+				code:   "",
+				basket: domain.Basket{Value: 10},
+			},
+			setupMocks:  func(repo *mocks.Repository, code string) {},
+			want:        nil,
+			expectedErr: service.ErrInvalidCode,
+		},
+		{
+			name: "Coupon not found",
+			args: args{
+				code:   "test",
 				basket: domain.Basket{Value: 10},
 			},
 			setupMocks: func(repo *mocks.Repository, code string) {
-				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool {
-					return true
-				}), code).Return(nil, service.ErrInvalidCode).Once()
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool { return true }), code).
+					Return(nil, memory.ErrNotFound).
+					Once()
 			},
 			want:        nil,
-			expectedErr: service.ErrInvalidCode,
+			expectedErr: service.ErrNotFound,
+		},
+		{
+			name: "Error",
+			args: args{
+				code:   "test",
+				basket: domain.Basket{Value: 10},
+			},
+			setupMocks: func(repo *mocks.Repository, code string) {
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool { return true }), code).
+					Return(nil, errors.New("fatal error")).
+					Once()
+			},
+			want:        nil,
+			expectedErr: errors.New("fatal error"),
 		},
 	}
 
