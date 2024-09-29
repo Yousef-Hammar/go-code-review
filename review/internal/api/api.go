@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -61,6 +62,7 @@ func (app *Application) requestLoggerMiddleware(c *gin.Context) {
 func (app *Application) Mount() http.Handler {
 	router := gin.New()
 	router.Use(app.requestLoggerMiddleware)
+	router.Use(cors.Default())
 
 	v1 := router.Group("/v1")
 
