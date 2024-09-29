@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -33,9 +34,46 @@ func (app *Application) CreateCoupon(c *gin.Context) {
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
-
 		}
 	}
 
 	c.Status(http.StatusCreated)
+}
+
+type Coupon struct {
+	Code           string `json:"code"`
+	Discount       int    `json:"discount"`
+	MinBasketValue int    `json:"minBasketValue"`
+}
+
+func (app *Application) Get(c *gin.Context) {
+	var (
+		resp []Coupon
+	)
+
+	rawCodes := c.Query("codes")
+
+	if rawCodes == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no code specified"})
+		return
+	}
+
+	codes := strings.Split(rawCodes, ",")
+
+	coupons, err := app.service.GetCoupons(c.Request.Context(), codes)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp = make([]Coupon, 0, len(coupons))
+	for _, coupon := range coupons {
+		resp = append(resp, Coupon{
+			Code:           coupon.Code,
+			Discount:       coupon.Discount,
+			MinBasketValue: coupon.MinBasketValue,
+		})
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
