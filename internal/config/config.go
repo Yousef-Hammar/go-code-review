@@ -6,7 +6,6 @@ import (
 
 type Config struct {
 	Addr string
-	Port int
 }
 
 func New() Config {
