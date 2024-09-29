@@ -1,4 +1,4 @@
-package service
+package service_test
 
 import (
 	"reflect"
@@ -6,11 +6,12 @@ import (
 
 	"coupon_service/internal/domain"
 	"coupon_service/internal/repository/memory"
+	"coupon_service/internal/service"
 )
 
 func TestService_ApplyCoupon(t *testing.T) {
 	type fields struct {
-		repo Repository
+		repo service.Repository
 	}
 	type args struct {
 		basket domain.Basket
@@ -25,9 +26,7 @@ func TestService_ApplyCoupon(t *testing.T) {
 	}{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := Service{
-				repo: tt.fields.repo,
-			}
+			s := service.New(tt.fields.repo)
 			gotB, err := s.ApplyCoupon(tt.args.basket, tt.args.code)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ApplyCoupon() error = %v, wantErr %v", err, tt.wantErr)
@@ -42,7 +41,7 @@ func TestService_ApplyCoupon(t *testing.T) {
 
 func TestService_CreateCoupon(t *testing.T) {
 	type fields struct {
-		repo Repository
+		repo service.Repository
 	}
 	type args struct {
 		discount       int
@@ -59,9 +58,7 @@ func TestService_CreateCoupon(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := Service{
-				repo: tt.fields.repo,
-			}
+			s := service.New(tt.fields.repo)
 
 			s.CreateCoupon(tt.args.discount, tt.args.code, tt.args.minBasketValue)
 		})
