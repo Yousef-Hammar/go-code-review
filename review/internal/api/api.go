@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"coupon_service/internal/domain"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/domain"
 )
 
 type Service interface {

@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"coupon_service/internal/domain"
-	"coupon_service/internal/repository/memory"
-	"coupon_service/internal/service"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/domain"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/repository/memory"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/service"
 )
 
 func TestService_ApplyCoupon(t *testing.T) {

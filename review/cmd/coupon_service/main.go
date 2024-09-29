@@ -7,10 +7,10 @@ import (
 	"runtime"
 	"time"
 
-	"coupon_service/internal/api"
-	"coupon_service/internal/config"
-	"coupon_service/internal/repository/memory"
-	"coupon_service/internal/service"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/api"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/config"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/repository/memory"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/service"
 )
 
 const (

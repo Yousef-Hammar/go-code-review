@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sync"
 
-	"coupon_service/internal/domain"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/domain"
 )
 
 var ErrNotFound = errors.New("coupon not found")

@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"coupon_service/internal/domain"
-	"coupon_service/internal/repository/memory"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/domain"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/repository/memory"
 )
 
 func TestFindByCode(t *testing.T) {

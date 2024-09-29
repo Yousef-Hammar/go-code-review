@@ -1,4 +1,4 @@
-module coupon_service
+module github.com/Yousef-Hammar/go-code-review/coupon_service
 
 go 1.22.0
 

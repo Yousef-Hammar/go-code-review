@@ -1,8 +1,9 @@
 package config
 
 import (
-	"coupon_service/internal/api"
 	"log"
+
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/api"
 
 	"github.com/brumhard/alligotor"
 )

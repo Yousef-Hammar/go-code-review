@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	. "coupon_service/internal/domain"
+	. "github.com/Yousef-Hammar/go-code-review/coupon_service/internal/domain"
 )
 
 type Repository interface {
