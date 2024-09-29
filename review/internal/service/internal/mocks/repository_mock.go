@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	domain "github.com/Yousef-Hammar/go-code-review/coupon_service/internal/domain"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -20,9 +22,9 @@ func (_m *Repository) EXPECT() *Repository_Expecter {
 	return &Repository_Expecter{mock: &_m.Mock}
 }
 
-// FindByCode provides a mock function with given fields: _a0
-func (_m *Repository) FindByCode(_a0 string) (*domain.Coupon, error) {
-	ret := _m.Called(_a0)
+// FindByCode provides a mock function with given fields: _a0, _a1
+func (_m *Repository) FindByCode(_a0 context.Context, _a1 string) (*domain.Coupon, error) {
+	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindByCode")
@@ -30,19 +32,19 @@ func (_m *Repository) FindByCode(_a0 string) (*domain.Coupon, error) {
 
 	var r0 *domain.Coupon
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (*domain.Coupon, error)); ok {
-		return rf(_a0)
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*domain.Coupon, error)); ok {
+		return rf(_a0, _a1)
 	}
-	if rf, ok := ret.Get(0).(func(string) *domain.Coupon); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(context.Context, string) *domain.Coupon); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.Coupon)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -56,14 +58,15 @@ type Repository_FindByCode_Call struct {
 }
 
 // FindByCode is a helper method to define mock.On call
-//   - _a0 string
-func (_e *Repository_Expecter) FindByCode(_a0 interface{}) *Repository_FindByCode_Call {
-	return &Repository_FindByCode_Call{Call: _e.mock.On("FindByCode", _a0)}
+//   - _a0 context.Context
+//   - _a1 string
+func (_e *Repository_Expecter) FindByCode(_a0 interface{}, _a1 interface{}) *Repository_FindByCode_Call {
+	return &Repository_FindByCode_Call{Call: _e.mock.On("FindByCode", _a0, _a1)}
 }
 
-func (_c *Repository_FindByCode_Call) Run(run func(_a0 string)) *Repository_FindByCode_Call {
+func (_c *Repository_FindByCode_Call) Run(run func(_a0 context.Context, _a1 string)) *Repository_FindByCode_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -73,22 +76,22 @@ func (_c *Repository_FindByCode_Call) Return(_a0 *domain.Coupon, _a1 error) *Rep
 	return _c
 }
 
-func (_c *Repository_FindByCode_Call) RunAndReturn(run func(string) (*domain.Coupon, error)) *Repository_FindByCode_Call {
+func (_c *Repository_FindByCode_Call) RunAndReturn(run func(context.Context, string) (*domain.Coupon, error)) *Repository_FindByCode_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// Save provides a mock function with given fields: _a0
-func (_m *Repository) Save(_a0 domain.Coupon) error {
-	ret := _m.Called(_a0)
+// Save provides a mock function with given fields: _a0, _a1
+func (_m *Repository) Save(_a0 context.Context, _a1 domain.Coupon) error {
+	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Save")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(domain.Coupon) error); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Coupon) error); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -102,14 +105,15 @@ type Repository_Save_Call struct {
 }
 
 // Save is a helper method to define mock.On call
-//   - _a0 domain.Coupon
-func (_e *Repository_Expecter) Save(_a0 interface{}) *Repository_Save_Call {
-	return &Repository_Save_Call{Call: _e.mock.On("Save", _a0)}
+//   - _a0 context.Context
+//   - _a1 domain.Coupon
+func (_e *Repository_Expecter) Save(_a0 interface{}, _a1 interface{}) *Repository_Save_Call {
+	return &Repository_Save_Call{Call: _e.mock.On("Save", _a0, _a1)}
 }
 
-func (_c *Repository_Save_Call) Run(run func(_a0 domain.Coupon)) *Repository_Save_Call {
+func (_c *Repository_Save_Call) Run(run func(_a0 context.Context, _a1 domain.Coupon)) *Repository_Save_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(domain.Coupon))
+		run(args[0].(context.Context), args[1].(domain.Coupon))
 	})
 	return _c
 }
@@ -119,7 +123,7 @@ func (_c *Repository_Save_Call) Return(_a0 error) *Repository_Save_Call {
 	return _c
 }
 
-func (_c *Repository_Save_Call) RunAndReturn(run func(domain.Coupon) error) *Repository_Save_Call {
+func (_c *Repository_Save_Call) RunAndReturn(run func(context.Context, domain.Coupon) error) *Repository_Save_Call {
 	_c.Call.Return(run)
 	return _c
 }

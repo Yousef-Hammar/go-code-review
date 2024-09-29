@@ -13,9 +13,9 @@ import (
 )
 
 type Service interface {
-	CreateCoupon(int, string, int) error
-	GetCoupons([]string) ([]domain.Coupon, error)
-	ApplyCoupon(domain.Basket, string) (*domain.Basket, error)
+	CreateCoupon(context.Context, int, string, int) error
+	GetCoupons(context.Context, []string) ([]domain.Coupon, error)
+	ApplyCoupon(context.Context, domain.Basket, string) (*domain.Basket, error)
 }
 
 type Config struct {

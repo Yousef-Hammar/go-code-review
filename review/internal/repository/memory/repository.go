@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"errors"
 	"sync"
 
@@ -21,7 +22,7 @@ func New() *Repository {
 	}
 }
 
-func (r *Repository) FindByCode(code string) (*domain.Coupon, error) {
+func (r *Repository) FindByCode(_ context.Context, code string) (*domain.Coupon, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -31,7 +32,7 @@ func (r *Repository) FindByCode(code string) (*domain.Coupon, error) {
 	return nil, ErrNotFound
 }
 
-func (r *Repository) Save(coupon domain.Coupon) error {
+func (r *Repository) Save(_ context.Context, coupon domain.Coupon) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"net/http"
 
 	. "github.com/Yousef-Hammar/go-code-review/coupon_service/internal/api/entity"
@@ -13,7 +14,7 @@ func (a *API) Apply(c *gin.Context) {
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		return
 	}
-	basket, err := a.svc.ApplyCoupon(apiReq.Basket, apiReq.Code)
+	basket, err := a.svc.ApplyCoupon(context.Background(), apiReq.Basket, apiReq.Code)
 	if err != nil {
 		return
 	}
@@ -26,7 +27,7 @@ func (a *API) Create(c *gin.Context) {
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		return
 	}
-	err := a.svc.CreateCoupon(apiReq.Discount, apiReq.Code, apiReq.MinBasketValue)
+	err := a.svc.CreateCoupon(context.Background(), apiReq.Discount, apiReq.Code, apiReq.MinBasketValue)
 	if err != nil {
 		return
 	}
@@ -38,7 +39,7 @@ func (a *API) Get(c *gin.Context) {
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		return
 	}
-	coupons, err := a.svc.GetCoupons(apiReq.Codes)
+	coupons, err := a.svc.GetCoupons(context.Background(), apiReq.Codes)
 	if err != nil {
 		return
 	}

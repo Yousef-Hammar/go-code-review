@@ -1,6 +1,7 @@
 package memory_test
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -43,8 +44,9 @@ func TestFindByCode(t *testing.T) {
 		},
 	}
 
+	ctx := context.Background()
 	repo := memory.New()
-	_ = repo.Save(domain.Coupon{
+	_ = repo.Save(ctx, domain.Coupon{
 		ID:             "test",
 		Code:           "test",
 		Discount:       0,
@@ -53,7 +55,7 @@ func TestFindByCode(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			coupon, err := repo.FindByCode(tc.code)
+			coupon, err := repo.FindByCode(ctx, tc.code)
 			if tc.expectedErr != nil {
 				if !errors.Is(err, tc.expectedErr) {
 					t.Errorf("expected err to be %v, got %v", tc.expectedErr, err)
@@ -88,10 +90,11 @@ func TestSave(t *testing.T) {
 	}
 
 	repo := memory.New()
+	ctx := context.Background()
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := repo.Save(tc.coupon)
+			err := repo.Save(ctx, tc.coupon)
 			if !errors.Is(err, tc.expectedErr) {
 				t.Errorf("expected err to be %v, got %v", tc.expectedErr, err)
 			}

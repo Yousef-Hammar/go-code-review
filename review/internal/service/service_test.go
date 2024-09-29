@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -32,8 +33,14 @@ func TestCreateCoupon(t *testing.T) {
 			name: "Successful coupon creation",
 			args: args{code: "test", discount: 10, minBasketValue: 5},
 			setupMocks: func(repo *mocks.Repository, args args) {
-				repo.On("FindByCode", args.code).Return(nil, memory.ErrNotFound).Once()
-				repo.On("Save", mock.MatchedBy(func(coupon domain.Coupon) bool {
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool {
+					return true
+				}), args.code).
+					Return(nil, memory.ErrNotFound).
+					Once()
+				repo.On("Save", mock.MatchedBy(func(ctx context.Context) bool {
+					return true
+				}), mock.MatchedBy(func(coupon domain.Coupon) bool {
 					return coupon.ID != "" &&
 						coupon.Code == args.code &&
 						coupon.Discount == args.discount &&
@@ -52,7 +59,11 @@ func TestCreateCoupon(t *testing.T) {
 			name: "Duplicated coupon code",
 			args: args{code: "test", discount: 10, minBasketValue: 5},
 			setupMocks: func(repo *mocks.Repository, args args) {
-				repo.On("FindByCode", args.code).Return(&domain.Coupon{}, nil).Once()
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool {
+					return true
+				}), args.code).
+					Return(&domain.Coupon{}, nil).
+					Once()
 			},
 			expectedErr: service.ErrInvalidCode,
 		},
@@ -83,8 +94,9 @@ func TestCreateCoupon(t *testing.T) {
 			defer repo.AssertExpectations(t)
 
 			srv := service.New(repo)
+			ctx := context.Background()
 
-			err := srv.CreateCoupon(tc.args.discount, tc.args.code, tc.args.minBasketValue)
+			err := srv.CreateCoupon(ctx, tc.args.discount, tc.args.code, tc.args.minBasketValue)
 			if tc.expectedErr != nil {
 				assert.Error(t, err, "expected error to be %v, got: %v", tc.expectedErr, err)
 				assert.IsType(t, tc.expectedErr, err, "expected error %T, got: %T", tc.expectedErr, err)
@@ -111,10 +123,14 @@ func TestGetCoupon(t *testing.T) {
 			name:  "Successful coupons retrieval",
 			codes: []string{"test1", "test2"},
 			setupMocks: func(repo *mocks.Repository) {
-				repo.On("FindByCode", "test1").
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool {
+					return true
+				}), "test1").
 					Return(&domain.Coupon{ID: "id1", Code: "test1", Discount: 10, MinBasketValue: 0}, nil).
 					Once()
-				repo.On("FindByCode", "test2").
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool {
+					return true
+				}), "test2").
 					Return(&domain.Coupon{ID: "id2", Code: "test2", Discount: 10, MinBasketValue: 0}, nil).
 					Once()
 			},
@@ -128,10 +144,14 @@ func TestGetCoupon(t *testing.T) {
 			name:  "Successful coupons retrieval with no existing coupon",
 			codes: []string{"test1", "test2"},
 			setupMocks: func(repo *mocks.Repository) {
-				repo.On("FindByCode", "test1").
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool {
+					return true
+				}), "test1").
 					Return(&domain.Coupon{ID: "id1", Code: "test1", Discount: 10, MinBasketValue: 0}, nil).
 					Once()
-				repo.On("FindByCode", "test2").
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool {
+					return true
+				}), "test2").
 					Return(nil, memory.ErrNotFound).Once().
 					Once()
 			},
@@ -144,7 +164,9 @@ func TestGetCoupon(t *testing.T) {
 			name:  "Error during coupon retrieval",
 			codes: []string{"test1", "test2"},
 			setupMocks: func(repo *mocks.Repository) {
-				repo.On("FindByCode", "test1").
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool {
+					return true
+				}), "test1").
 					Return(nil, errors.New("fatal error")).
 					Once()
 			},
@@ -160,7 +182,9 @@ func TestGetCoupon(t *testing.T) {
 			defer repo.AssertExpectations(t)
 
 			srv := service.New(repo)
-			got, err := srv.GetCoupons(tc.codes)
+			ctx := context.Background()
+
+			got, err := srv.GetCoupons(ctx, tc.codes)
 			if tc.expectedErr != nil {
 				assert.Error(t, err, "expected error to be %v, got: %v", tc.expectedErr, err)
 				assert.IsType(t, tc.expectedErr, err, "expected error %v, got: %v", tc.expectedErr, err)
@@ -193,7 +217,9 @@ func TestApplyCoupon(t *testing.T) {
 				basket: domain.Basket{Value: 50},
 			},
 			setupMocks: func(repo *mocks.Repository, code string) {
-				repo.On("FindByCode", code).Return(&domain.Coupon{
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool {
+					return true
+				}), code).Return(&domain.Coupon{
 					ID:             "id1",
 					Code:           code,
 					Discount:       10,
@@ -224,7 +250,9 @@ func TestApplyCoupon(t *testing.T) {
 				basket: domain.Basket{Value: 10},
 			},
 			setupMocks: func(repo *mocks.Repository, code string) {
-				repo.On("FindByCode", code).Return(&domain.Coupon{
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool {
+					return true
+				}), code).Return(&domain.Coupon{
 					ID:             "id1",
 					Code:           code,
 					Discount:       10,
@@ -241,7 +269,9 @@ func TestApplyCoupon(t *testing.T) {
 				basket: domain.Basket{Value: 10},
 			},
 			setupMocks: func(repo *mocks.Repository, code string) {
-				repo.On("FindByCode", code).Return(nil, service.ErrInvalidCode).Once()
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool {
+					return true
+				}), code).Return(nil, service.ErrInvalidCode).Once()
 			},
 			want:        nil,
 			expectedErr: service.ErrInvalidCode,
@@ -255,7 +285,9 @@ func TestApplyCoupon(t *testing.T) {
 			defer repo.AssertExpectations(t)
 
 			srv := service.New(repo)
-			got, err := srv.ApplyCoupon(tc.args.basket, tc.args.code)
+			ctx := context.Background()
+
+			got, err := srv.ApplyCoupon(ctx, tc.args.basket, tc.args.code)
 			if tc.expectedErr != nil {
 				assert.Error(t, err, "expected error to be %v, got: %v", tc.expectedErr, err)
 				assert.IsType(t, tc.expectedErr, err, "expected error %v, got: %v", tc.expectedErr, err)

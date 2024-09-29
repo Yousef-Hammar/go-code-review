@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 
 	"github.com/google/uuid"
@@ -27,7 +28,7 @@ func New(repo Repository) Service {
 	}
 }
 
-func (s Service) CreateCoupon(discount int, code string, minBasketValue int) error {
+func (s Service) CreateCoupon(ctx context.Context, discount int, code string, minBasketValue int) error {
 	if code == "" {
 		return ErrInvalidCode
 	}
@@ -40,7 +41,7 @@ func (s Service) CreateCoupon(discount int, code string, minBasketValue int) err
 		return ErrInvalidMinBasketValue
 	}
 
-	if _, err := s.repo.FindByCode(code); err == nil || !errors.Is(err, memory.ErrNotFound) {
+	if _, err := s.repo.FindByCode(ctx, code); err == nil || !errors.Is(err, memory.ErrNotFound) {
 		return ErrInvalidCode
 	}
 
@@ -51,17 +52,17 @@ func (s Service) CreateCoupon(discount int, code string, minBasketValue int) err
 		MinBasketValue: minBasketValue,
 	}
 
-	if err := s.repo.Save(coupon); err != nil {
+	if err := s.repo.Save(ctx, coupon); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s Service) GetCoupons(codes []string) ([]domain.Coupon, error) {
+func (s Service) GetCoupons(ctx context.Context, codes []string) ([]domain.Coupon, error) {
 	coupons := make([]domain.Coupon, 0, len(codes))
 
 	for _, code := range codes {
-		coupon, err := s.repo.FindByCode(code)
+		coupon, err := s.repo.FindByCode(ctx, code)
 		if err != nil {
 			if errors.Is(err, memory.ErrNotFound) {
 				continue
@@ -74,7 +75,7 @@ func (s Service) GetCoupons(codes []string) ([]domain.Coupon, error) {
 	return coupons, nil
 }
 
-func (s Service) ApplyCoupon(basket domain.Basket, code string) (*domain.Basket, error) {
+func (s Service) ApplyCoupon(ctx context.Context, basket domain.Basket, code string) (*domain.Basket, error) {
 	var (
 		err error
 	)
@@ -83,7 +84,7 @@ func (s Service) ApplyCoupon(basket domain.Basket, code string) (*domain.Basket,
 		return nil, ErrInvalidBasketValue
 	}
 
-	coupon, err := s.repo.FindByCode(code)
+	coupon, err := s.repo.FindByCode(ctx, code)
 	if err != nil {
 		return nil, err
 	}
