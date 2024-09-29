@@ -10,7 +10,7 @@ import (
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/domain"
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/repository/memory"
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/service"
-	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/service/mocks"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/service/internal/mocks"
 )
 
 func TestCreateCoupon(t *testing.T) {
@@ -23,7 +23,7 @@ func TestCreateCoupon(t *testing.T) {
 	type testCase struct {
 		name        string
 		args        args
-		setupMocks  func(*mocks.MockRepository, args)
+		setupMocks  func(*mocks.Repository, args)
 		expectedErr error
 	}
 
@@ -31,7 +31,7 @@ func TestCreateCoupon(t *testing.T) {
 		{
 			name: "Successful coupon creation",
 			args: args{code: "test", discount: 10, minBasketValue: 5},
-			setupMocks: func(repo *mocks.MockRepository, args args) {
+			setupMocks: func(repo *mocks.Repository, args args) {
 				repo.On("FindByCode", args.code).Return(nil, memory.ErrNotFound).Once()
 				repo.On("Save", mock.MatchedBy(func(coupon domain.Coupon) bool {
 					return coupon.ID != "" &&
@@ -45,13 +45,13 @@ func TestCreateCoupon(t *testing.T) {
 		{
 			name:        "Empty coupon code",
 			args:        args{code: "", discount: 10, minBasketValue: 5},
-			setupMocks:  func(repo *mocks.MockRepository, args args) {},
+			setupMocks:  func(repo *mocks.Repository, args args) {},
 			expectedErr: service.ErrInvalidCode,
 		},
 		{
 			name: "Duplicated coupon code",
 			args: args{code: "test", discount: 10, minBasketValue: 5},
-			setupMocks: func(repo *mocks.MockRepository, args args) {
+			setupMocks: func(repo *mocks.Repository, args args) {
 				repo.On("FindByCode", args.code).Return(&domain.Coupon{}, nil).Once()
 			},
 			expectedErr: service.ErrInvalidCode,
@@ -59,26 +59,26 @@ func TestCreateCoupon(t *testing.T) {
 		{
 			name:        "Negative discount value",
 			args:        args{code: "test", discount: -1, minBasketValue: 5},
-			setupMocks:  func(repo *mocks.MockRepository, args args) {},
+			setupMocks:  func(repo *mocks.Repository, args args) {},
 			expectedErr: service.ErrInvalidDiscount,
 		},
 		{
 			name:        "Discount value greater than 100",
 			args:        args{code: "test", discount: 200, minBasketValue: 5},
-			setupMocks:  func(repo *mocks.MockRepository, args args) {},
+			setupMocks:  func(repo *mocks.Repository, args args) {},
 			expectedErr: service.ErrInvalidDiscount,
 		},
 		{
 			name:        "Negative minimum basket value",
 			args:        args{code: "test", discount: 10, minBasketValue: -1},
-			setupMocks:  func(repo *mocks.MockRepository, args args) {},
+			setupMocks:  func(repo *mocks.Repository, args args) {},
 			expectedErr: service.ErrInvalidMinBasketValue,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			repo := mocks.NewMockRepository(t)
+			repo := mocks.NewRepository(t)
 			tc.setupMocks(repo, tc.args)
 			defer repo.AssertExpectations(t)
 

@@ -4,6 +4,7 @@ packages:
     config:
       all: True
       recursive: True
+      mockname: "{{.InterfaceName}}"
       filename: "{{.InterfaceName | lower }}_mock.go"
-      dir: "internal/service/mocks"
+      dir: "internal/service/internal/mocks"
       outpkg: "mocks"
