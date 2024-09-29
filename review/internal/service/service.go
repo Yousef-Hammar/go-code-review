@@ -17,11 +17,6 @@ var (
 	ErrMinBasketValue        = errors.New("not sufficient basket value")
 )
 
-type Repository interface {
-	FindByCode(string) (*domain.Coupon, error)
-	Save(domain.Coupon) error
-}
-
 type Service struct {
 	repo Repository
 }
