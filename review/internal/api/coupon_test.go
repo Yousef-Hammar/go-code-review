@@ -19,6 +19,7 @@ import (
 
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/api"
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/api/internal/mocks"
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/config"
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/domain"
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/service"
 )
@@ -27,7 +28,7 @@ func newTestApplication(t *testing.T, srv *mocks.Service) *api.Application {
 	t.Helper()
 
 	logger := zap.NewNop().Sugar()
-	return api.NewApplication(api.Config{}, logger, srv)
+	return api.NewApplication(config.Config{}, logger, srv)
 }
 
 func TestCreate(t *testing.T) {

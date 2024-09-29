@@ -11,15 +11,17 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+
+	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/config"
 )
 
 type Application struct {
-	config  Config
+	config  config.Config
 	logger  *zap.SugaredLogger
 	service Service
 }
 
-func NewApplication(config Config, logger *zap.SugaredLogger, service Service) *Application {
+func NewApplication(config config.Config, logger *zap.SugaredLogger, service Service) *Application {
 	return &Application{
 		config:  config,
 		logger:  logger,
