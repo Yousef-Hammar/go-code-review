@@ -78,7 +78,8 @@ func (app *Application) requestLoggerMiddleware(c *gin.Context) {
 	c.Request.Body = io.NopCloser(bytes.NewReader(requestBody))
 }
 
-func (app *Application) Mount() http.Handler {
+func (app *Application) Mount(mode string) http.Handler {
+	gin.SetMode(mode)
 	router := gin.New()
 	router.Use(app.requestLoggerMiddleware)
 	router.Use(cors.Default())

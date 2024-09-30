@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
 	"github.com/Yousef-Hammar/go-code-review/coupon_service/internal/api"
@@ -21,7 +22,7 @@ func main() {
 
 	app := api.New(cfg, logger, svc)
 
-	router := app.Mount()
+	router := app.Mount(gin.DebugMode)
 
 	if err := app.Run(router); err != nil {
 		log.Fatal(err)

@@ -55,7 +55,7 @@ var _ = Describe("Coupon Service API", func() {
 					MinBasketValue: 100,
 				}
 				jsonBody, _ := json.Marshal(body)
-				req, _ := http.NewRequest("POST", "/coupons", bytes.NewBuffer(jsonBody))
+				req, _ := http.NewRequest(http.MethodPost, "/coupons", bytes.NewBuffer(jsonBody))
 				req.Header.Set("Content-Type", "application/json")
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
@@ -72,7 +72,7 @@ var _ = Describe("Coupon Service API", func() {
 					MinBasketValue: 100,
 				}
 				jsonBody, _ := json.Marshal(body)
-				req, _ := http.NewRequest("POST", "/coupons", bytes.NewBuffer(jsonBody))
+				req, _ := http.NewRequest(http.MethodPost, "/coupons", bytes.NewBuffer(jsonBody))
 				req.Header.Set("Content-Type", "application/json")
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
@@ -87,7 +87,7 @@ var _ = Describe("Coupon Service API", func() {
 					MinBasketValue: -10,
 				}
 				jsonBody, _ := json.Marshal(body)
-				req, _ := http.NewRequest("POST", "/coupons", bytes.NewBuffer(jsonBody))
+				req, _ := http.NewRequest(http.MethodPost, "/coupons", bytes.NewBuffer(jsonBody))
 				req.Header.Set("Content-Type", "application/json")
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
@@ -105,7 +105,7 @@ var _ = Describe("Coupon Service API", func() {
 
 		Context("with valid code", func() {
 			It("should return the coupon details", func() {
-				req, _ := http.NewRequest("GET", "/coupons?codes=test", nil)
+				req, _ := http.NewRequest(http.MethodGet, "/coupons?codes=test", nil)
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
 
@@ -117,7 +117,7 @@ var _ = Describe("Coupon Service API", func() {
 
 		Context("with no code specified", func() {
 			It("should return 400", func() {
-				req, _ := http.NewRequest("GET", "/coupons", nil)
+				req, _ := http.NewRequest(http.MethodGet, "/coupons", nil)
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
 
@@ -127,11 +127,52 @@ var _ = Describe("Coupon Service API", func() {
 
 		Context("with non existing coupon for specified code", func() {
 			It("should return 404", func() {
-				req, _ := http.NewRequest("GET", "/coupons?codes=test2", nil)
+				req, _ := http.NewRequest(http.MethodGet, "/coupons?codes=test2", nil)
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
 
 				Expect(w.Code).To(Equal(http.StatusNotFound))
+			})
+		})
+	})
+
+	Describe("Applying a coupon", func() {
+		BeforeEach(func() {
+			err := srv.CreateCoupon(nil, 10, "test", 100)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		Context("with valid basket and coupon", func() {
+			It("should apply the discount and return updated basket", func() {
+				body := api.ApplyReq{
+					Basket: api.Basket{Value: 200},
+					Code:   "test",
+				}
+				jsonBody, _ := json.Marshal(body)
+				req, _ := http.NewRequest(http.MethodPost, "/coupons/basket", bytes.NewBuffer(jsonBody))
+				req.Header.Set("Content-Type", "application/json")
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
+
+				Expect(w.Code).To(Equal(http.StatusOK))
+				expectedBody := `{"data":{"value":190,"appliedDiscount":10}}`
+				Expect(w.Body.String()).To(MatchJSON(expectedBody))
+			})
+		})
+
+		Context("with basket value below minimum", func() {
+			It("should return 400", func() {
+				body := api.ApplyReq{
+					Basket: api.Basket{Value: 50},
+					Code:   "test2",
+				}
+				jsonBody, _ := json.Marshal(body)
+				req, _ := http.NewRequest(http.MethodPost, "/coupons/basket", bytes.NewBuffer(jsonBody))
+				req.Header.Set("Content-Type", "application/json")
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
+
+				Expect(w.Code).To(Equal(http.StatusBadRequest))
 			})
 		})
 	})
