@@ -25,15 +25,12 @@ func TestAPI(t *testing.T) {
 
 var _ = Describe("Coupon Service API", func() {
 	var (
-		router *gin.Engine
+		router http.Handler
 		app    *api.Application
 		srv    service.Service
 	)
 
 	BeforeEach(func() {
-		gin.SetMode(gin.TestMode)
-		router = gin.New()
-
 		cfg := config.New()
 		logger := zap.NewNop().Sugar()
 
@@ -41,9 +38,7 @@ var _ = Describe("Coupon Service API", func() {
 		srv = service.New(repo)
 		app = api.New(cfg, logger, srv)
 
-		router.POST("/coupons", app.Create)
-		router.GET("/coupons", app.Get)
-		router.POST("/coupons/basket", app.Apply)
+		router = app.Mount(gin.TestMode)
 	})
 
 	Describe("Creating a coupon", func() {
@@ -55,7 +50,7 @@ var _ = Describe("Coupon Service API", func() {
 					MinBasketValue: 100,
 				}
 				jsonBody, _ := json.Marshal(body)
-				req, _ := http.NewRequest(http.MethodPost, "/coupons", bytes.NewBuffer(jsonBody))
+				req, _ := http.NewRequest(http.MethodPost, "/v1/coupons", bytes.NewBuffer(jsonBody))
 				req.Header.Set("Content-Type", "application/json")
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
@@ -72,12 +67,13 @@ var _ = Describe("Coupon Service API", func() {
 					MinBasketValue: 100,
 				}
 				jsonBody, _ := json.Marshal(body)
-				req, _ := http.NewRequest(http.MethodPost, "/coupons", bytes.NewBuffer(jsonBody))
+				req, _ := http.NewRequest(http.MethodPost, "/v1/coupons", bytes.NewBuffer(jsonBody))
 				req.Header.Set("Content-Type", "application/json")
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
 
 				Expect(w.Code).To(Equal(http.StatusBadRequest))
+				Expect(w.Body.String()).To(ContainSubstring("invalid discount"))
 			})
 
 			It("should return 400 for invalid min basket", func() {
@@ -87,7 +83,23 @@ var _ = Describe("Coupon Service API", func() {
 					MinBasketValue: -10,
 				}
 				jsonBody, _ := json.Marshal(body)
-				req, _ := http.NewRequest(http.MethodPost, "/coupons", bytes.NewBuffer(jsonBody))
+				req, _ := http.NewRequest(http.MethodPost, "/v1/coupons", bytes.NewBuffer(jsonBody))
+				req.Header.Set("Content-Type", "application/json")
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
+
+				Expect(w.Code).To(Equal(http.StatusBadRequest))
+				Expect(w.Body.String()).To(ContainSubstring("invalid min basket"))
+			})
+
+			It("should return 400 for empty code", func() {
+				body := api.CreateCouponReq{
+					Code:           "",
+					Discount:       10,
+					MinBasketValue: 100,
+				}
+				jsonBody, _ := json.Marshal(body)
+				req, _ := http.NewRequest(http.MethodPost, "/v1/coupons", bytes.NewBuffer(jsonBody))
 				req.Header.Set("Content-Type", "application/json")
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
@@ -105,7 +117,7 @@ var _ = Describe("Coupon Service API", func() {
 
 		Context("with valid code", func() {
 			It("should return the coupon details", func() {
-				req, _ := http.NewRequest(http.MethodGet, "/coupons?codes=test", nil)
+				req, _ := http.NewRequest(http.MethodGet, "/v1/coupons?codes=test", nil)
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
 
@@ -117,7 +129,7 @@ var _ = Describe("Coupon Service API", func() {
 
 		Context("with no code specified", func() {
 			It("should return 400", func() {
-				req, _ := http.NewRequest(http.MethodGet, "/coupons", nil)
+				req, _ := http.NewRequest(http.MethodGet, "/v1/coupons", nil)
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
 
@@ -125,13 +137,30 @@ var _ = Describe("Coupon Service API", func() {
 			})
 		})
 
-		Context("with non existing coupon for specified code", func() {
+		Context("with non-existing coupon for specified code", func() {
 			It("should return 404", func() {
-				req, _ := http.NewRequest(http.MethodGet, "/coupons?codes=test2", nil)
+				req, _ := http.NewRequest(http.MethodGet, "/v1/coupons?codes=test2", nil)
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
 
 				Expect(w.Code).To(Equal(http.StatusNotFound))
+			})
+		})
+
+		Context("with multiple codes", func() {
+			BeforeEach(func() {
+				err := srv.CreateCoupon(nil, 20, "test2", 200)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("should return all existing coupons", func() {
+				req, _ := http.NewRequest(http.MethodGet, "/v1/coupons?codes=test,test2,nonexistent", nil)
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
+
+				Expect(w.Code).To(Equal(http.StatusOK))
+				expectedBody := `{"data":[{"code":"test","discount":10,"minBasketValue":100},{"code":"test2","discount":20,"minBasketValue":200}]}`
+				Expect(w.Body.String()).To(MatchJSON(expectedBody))
 			})
 		})
 	})
@@ -149,7 +178,7 @@ var _ = Describe("Coupon Service API", func() {
 					Code:   "test",
 				}
 				jsonBody, _ := json.Marshal(body)
-				req, _ := http.NewRequest(http.MethodPost, "/coupons/basket", bytes.NewBuffer(jsonBody))
+				req, _ := http.NewRequest(http.MethodPost, "/v1/coupons/basket", bytes.NewBuffer(jsonBody))
 				req.Header.Set("Content-Type", "application/json")
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
@@ -164,10 +193,26 @@ var _ = Describe("Coupon Service API", func() {
 			It("should return 400", func() {
 				body := api.ApplyReq{
 					Basket: api.Basket{Value: 50},
-					Code:   "test2",
+					Code:   "test",
 				}
 				jsonBody, _ := json.Marshal(body)
-				req, _ := http.NewRequest(http.MethodPost, "/coupons/basket", bytes.NewBuffer(jsonBody))
+				req, _ := http.NewRequest(http.MethodPost, "/v1/coupons/basket", bytes.NewBuffer(jsonBody))
+				req.Header.Set("Content-Type", "application/json")
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
+
+				Expect(w.Code).To(Equal(http.StatusBadRequest))
+			})
+		})
+
+		Context("with non-existent coupon code", func() {
+			It("should return 404", func() {
+				body := api.ApplyReq{
+					Basket: api.Basket{Value: 200},
+					Code:   "nonexistent",
+				}
+				jsonBody, _ := json.Marshal(body)
+				req, _ := http.NewRequest(http.MethodPost, "/v1/coupons/basket", bytes.NewBuffer(jsonBody))
 				req.Header.Set("Content-Type", "application/json")
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
