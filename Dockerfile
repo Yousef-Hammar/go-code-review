@@ -1,10 +1,11 @@
-FROM golang:alpine AS builder
+FROM golang:1.22.7-alpine3.20 AS builder
 
 RUN apk add --no-cache git gcc musl-dev
 
 WORKDIR /app
 
-COPY go.mod ./
+COPY go.mod go.sum ./
+
 RUN go mod download
 
 COPY . .

@@ -1,6 +1,5 @@
 Makefile
 
-*.sum
 *.yaml
 *.md
 *.test
