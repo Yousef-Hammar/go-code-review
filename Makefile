@@ -1,3 +1,7 @@
+#!make
+include ./.env
+export $(shell sed 's/=.*//' ./.env)
+
 run-unit-tests:
 	go test -v ./...
 
@@ -10,5 +14,6 @@ generate-mocks:
 docker-build:
 	 docker build -t coupon-service .
 
-docker-run:
-	docker run -p 8080:8080 coupon-service
+docker-run: docker-build
+	docker run --env-file .env -p ${ADDR}:${ADDR} coupon-service
+

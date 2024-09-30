@@ -98,7 +98,7 @@ func (app *Application) Mount(mode string) http.Handler {
 
 func (app *Application) Run(mux http.Handler) error {
 	srv := &http.Server{
-		Addr:         fmt.Sprintf("%s", app.config.Addr),
+		Addr:         fmt.Sprintf(":%s", app.config.Addr),
 		Handler:      mux,
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  15 * time.Second,
