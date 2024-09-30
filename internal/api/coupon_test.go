@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -32,6 +33,10 @@ func newTestApplication(t *testing.T, srv *mocks.Service) *api.Application {
 }
 
 func TestCreate(t *testing.T) {
+	if os.Getenv("LONG") != "" {
+		t.Skip("Skipping TestCreate in long mode.")
+	}
+
 	type testCase struct {
 		name      string
 		body      *api.CreateCouponReq
@@ -138,6 +143,10 @@ func TestCreate(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
+	if os.Getenv("LONG") != "" {
+		t.Skip("Skipping TestGet in long mode.")
+	}
+
 	type coupon struct {
 		Code           string `json:"code"`
 		Discount       int    `json:"discount"`
@@ -238,6 +247,10 @@ func TestGet(t *testing.T) {
 }
 
 func TestApply(t *testing.T) {
+	if os.Getenv("LONG") != "" {
+		t.Skip("Skipping TestApply in long mode.")
+	}
+
 	type testCase struct {
 		name           string
 		body           api.ApplyReq

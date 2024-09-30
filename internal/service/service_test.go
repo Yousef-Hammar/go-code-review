@@ -3,6 +3,7 @@ package service_test
 import (
 	"context"
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,6 +16,10 @@ import (
 )
 
 func TestCreateCoupon(t *testing.T) {
+	if os.Getenv("LONG") != "" {
+		t.Skip("Skipping TestCreateCoupon in long mode.")
+	}
+
 	type args struct {
 		code           string
 		discount       int
@@ -110,6 +115,10 @@ func TestCreateCoupon(t *testing.T) {
 }
 
 func TestGetCoupon(t *testing.T) {
+	if os.Getenv("LONG") != "" {
+		t.Skip("Skipping TestGetCoupon in long mode.")
+	}
+
 	type testCase struct {
 		name        string
 		codes       []string
@@ -197,6 +206,10 @@ func TestGetCoupon(t *testing.T) {
 }
 
 func TestApplyCoupon(t *testing.T) {
+	if os.Getenv("LONG") != "" {
+		t.Skip("Skipping TestApplyCoupon in long mode.")
+	}
+
 	type args struct {
 		code   string
 		basket domain.Basket

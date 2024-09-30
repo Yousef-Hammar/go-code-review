@@ -3,6 +3,7 @@ package memory_test
 import (
 	"context"
 	"errors"
+	"os"
 	"reflect"
 	"testing"
 
@@ -11,6 +12,10 @@ import (
 )
 
 func TestFindByCode(t *testing.T) {
+	if os.Getenv("LONG") != "" {
+		t.Skip("Skipping TestFindByCode in long mode.")
+	}
+
 	type testCase struct {
 		name        string
 		code        string
@@ -70,6 +75,10 @@ func TestFindByCode(t *testing.T) {
 }
 
 func TestSave(t *testing.T) {
+	if os.Getenv("LONG") != "" {
+		t.Skip("Skipping TestSave in long mode.")
+	}
+
 	type testCase struct {
 		name        string
 		coupon      domain.Coupon

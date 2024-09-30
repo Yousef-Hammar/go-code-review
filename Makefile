@@ -1,5 +1,8 @@
-run-tests:
-	go test ./...
+run-unit-tests:
+	go test -v ./...
+
+run-integration-tests:
+	LONG=true go test -v ./...
 
 generate-mocks:
 	mockery

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,9 @@ import (
 )
 
 func TestAPI(t *testing.T) {
+	if os.Getenv("LONG") == "" {
+		t.Skip("Skipping TestAPI integration tests in short mode.")
+	}
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Coupon Service API Suite")
 }
@@ -39,6 +43,10 @@ var _ = Describe("Coupon Service API", func() {
 		app = api.New(cfg, logger, srv)
 
 		router = app.Mount(gin.TestMode)
+	})
+
+	AfterEach(func() {
+
 	})
 
 	Describe("Creating a coupon", func() {
