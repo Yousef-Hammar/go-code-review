@@ -99,15 +99,16 @@ func (s Service) ApplyCoupon(ctx context.Context, basket domain.Basket, code str
 		}
 	}
 
+	if basket.Value < coupon.Discount {
+		return nil, ErrInvalidBasketValue
+	}
+
 	if basket.Value < coupon.MinBasketValue {
 		return nil, ErrMinBasketValue
 	}
 
-	discountAmount := (basket.Value * coupon.Discount) / 100
-
 	return &domain.Basket{
-		Value:                 basket.Value - discountAmount,
-		AppliedDiscount:       coupon.Discount,
-		ApplicationSuccessful: true,
+		Value:           basket.Value - coupon.Discount,
+		AppliedDiscount: coupon.Discount,
 	}, nil
 }

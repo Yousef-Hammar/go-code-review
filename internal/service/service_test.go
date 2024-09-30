@@ -227,11 +227,29 @@ func TestApplyCoupon(t *testing.T) {
 				}, nil).Once()
 			},
 			want: &domain.Basket{
-				Value:                 45,
-				AppliedDiscount:       10,
-				ApplicationSuccessful: true,
+				Value:           40,
+				AppliedDiscount: 10,
 			},
 			expectedErr: nil,
+		},
+		{
+			name: "Basket value less than discount",
+			args: args{
+				code:   "test1",
+				basket: domain.Basket{Value: 5},
+			},
+			setupMocks: func(repo *mocks.Repository, code string) {
+				repo.On("FindByCode", mock.MatchedBy(func(ctx context.Context) bool {
+					return true
+				}), code).Return(&domain.Coupon{
+					ID:             "id1",
+					Code:           code,
+					Discount:       10,
+					MinBasketValue: 0,
+				}, nil).Once()
+			},
+			want:        nil,
+			expectedErr: service.ErrInvalidBasketValue,
 		},
 		{
 			name: "Basket with negative value",

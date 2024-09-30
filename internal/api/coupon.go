@@ -91,9 +91,8 @@ func (app *Application) Get(c *gin.Context) {
 }
 
 type Basket struct {
-	Value                 int  `json:"value" binding:"required"`
-	AppliedDiscount       int  `json:"appliedDiscount"`
-	ApplicationSuccessful bool `json:"applicationSuccessful"`
+	Value           int `json:"value" binding:"required"`
+	AppliedDiscount int `json:"appliedDiscount"`
 }
 
 type ApplyReq struct {
@@ -128,8 +127,7 @@ func (app *Application) Apply(c *gin.Context) {
 	}
 
 	app.writeJSONResponse(c, http.StatusOK, Basket{
-		Value:                 basket.Value,
-		AppliedDiscount:       basket.AppliedDiscount,
-		ApplicationSuccessful: basket.ApplicationSuccessful,
+		Value:           basket.Value,
+		AppliedDiscount: basket.AppliedDiscount,
 	})
 }

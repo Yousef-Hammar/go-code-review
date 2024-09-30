@@ -1,7 +1,6 @@
 package domain
 
 type Basket struct {
-	Value                 int
-	AppliedDiscount       int
-	ApplicationSuccessful bool
+	Value           int
+	AppliedDiscount int
 }
