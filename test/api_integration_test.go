@@ -45,10 +45,6 @@ var _ = Describe("Coupon Service API", func() {
 		router = app.Mount(gin.TestMode)
 	})
 
-	AfterEach(func() {
-
-	})
-
 	Describe("Creating a coupon", func() {
 		Context("with valid input", func() {
 			It("should create a new coupon and return 201", func() {
