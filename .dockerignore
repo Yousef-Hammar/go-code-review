@@ -1,0 +1,9 @@
+Makefile
+
+*.sum
+*.yaml
+*.md
+*.test
+*_test.go
+*_mock.go
+
