@@ -81,6 +81,12 @@ func (app *Application) Get(c *gin.Context) {
 		})
 	}
 
+	if len(resp) == 0 {
+		app.logger.Debug("no coupons found", "codes", rawCodes)
+		app.writeJSONError(c, http.StatusNotFound, errors.New("no coupons found"))
+		return
+	}
+
 	app.writeJSONResponse(c, http.StatusOK, resp)
 }
 

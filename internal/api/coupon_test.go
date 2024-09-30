@@ -181,6 +181,17 @@ func TestGet(t *testing.T) {
 			},
 		},
 		{
+			name:  "Coupon not found",
+			codes: []string{"test"},
+			setupMock: func(srv *mocks.Service, codes []string) {
+				srv.On("GetCoupons", mock.MatchedBy(func(_ context.Context) bool { return true }), codes).
+					Return(make([]domain.Coupon, 0), nil).
+					Once()
+			},
+			wantStatusCode: http.StatusNotFound,
+			want:           nil,
+		},
+		{
 			name:           "Empty codes",
 			codes:          []string{},
 			setupMock:      func(srv *mocks.Service, codes []string) {},
