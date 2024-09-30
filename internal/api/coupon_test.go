@@ -257,17 +257,15 @@ func TestApply(t *testing.T) {
 				srv.On("ApplyCoupon", mock.MatchedBy(func(_ context.Context) bool { return true }),
 					domain.Basket{Value: value}, code).
 					Return(&domain.Basket{
-						Value:                 90,
-						AppliedDiscount:       10,
-						ApplicationSuccessful: true,
+						Value:           90,
+						AppliedDiscount: 10,
 					}, nil).
 					Once()
 			},
 			wantStatusCode: http.StatusOK,
 			want: api.Basket{
-				Value:                 90,
-				AppliedDiscount:       10,
-				ApplicationSuccessful: true,
+				Value:           90,
+				AppliedDiscount: 10,
 			},
 		},
 		{
