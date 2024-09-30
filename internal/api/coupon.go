@@ -23,12 +23,14 @@ func (app *Application) Create(c *gin.Context) {
 	)
 
 	if err := c.ShouldBindBodyWithJSON(&body); err != nil {
+		app.logger.Errorw("error occurred while binding body", "error", err)
 		app.writeJSONError(c, http.StatusBadRequest, err)
 		return
 	}
 
 	err := app.service.CreateCoupon(c.Request.Context(), body.Discount, body.Code, body.MinBasketValue)
 	if err != nil {
+		app.logger.Errorw("error occurred while creating coupon", "error", err)
 		switch err {
 		case service.ErrInvalidCode, service.ErrInvalidDiscount, service.ErrInvalidMinBasketValue:
 			app.writeJSONError(c, http.StatusBadRequest, err)
@@ -56,6 +58,7 @@ func (app *Application) Get(c *gin.Context) {
 	rawCodes := c.Query("codes")
 
 	if rawCodes == "" {
+		app.logger.Errorw("error occurred while getting coupons, missing codes")
 		app.writeJSONError(c, http.StatusBadRequest, errors.New("no code specified"))
 		return
 	}
@@ -64,6 +67,7 @@ func (app *Application) Get(c *gin.Context) {
 
 	coupons, err := app.service.GetCoupons(c.Request.Context(), codes)
 	if err != nil {
+		app.logger.Errorw("error occurred while getting coupons", "error", err)
 		app.writeJSONError(c, http.StatusInternalServerError, err)
 		return
 	}
@@ -95,6 +99,7 @@ func (app *Application) Apply(c *gin.Context) {
 	var body ApplyReq
 
 	if err := c.ShouldBindBodyWithJSON(&body); err != nil {
+		app.logger.Errorw("error occurred while binding body", "error", err)
 		app.writeJSONError(c, http.StatusBadRequest, err)
 		return
 	}
@@ -105,6 +110,7 @@ func (app *Application) Apply(c *gin.Context) {
 
 	basket, err := app.service.ApplyCoupon(c.Request.Context(), *basket, body.Code)
 	if err != nil {
+		app.logger.Errorw("error occurred while applying coupon", "error", err)
 		switch err {
 		case service.ErrInvalidCode, service.ErrInvalidBasketValue, service.ErrMinBasketValue, service.ErrNotFound:
 			app.writeJSONError(c, http.StatusBadRequest, err)
