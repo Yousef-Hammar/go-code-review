@@ -24,7 +24,7 @@ The repository is organized into the following subfolders:
 The backend is structured into three main layers:
 
 1. **API Layer** (`api`):
-    - Responsible for starting the server and handling incoming requests.
+    - Responsible for server configuration and defining request handlers.
 
 2. **Service Layer** (`service`):
     - Contains the business logic of the application, ensuring separation of concerns.
