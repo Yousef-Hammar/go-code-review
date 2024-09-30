@@ -1,7 +1,7 @@
 # Schwarz IT Code Review Repository
 
-This repository contains my solution for the coding challenge completed during the onboarding process as a Go
-developer for Schwarz IT. It aims to address various code smells and security issues identified in the original code.
+This repository contains my solution for the coding challenge during the onboarding process as a Go developer for 
+Schwarz IT. It aims to address various code smells and security issues identified in the original code.
 
 ## Prerequisites
 
